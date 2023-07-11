@@ -13,6 +13,8 @@ public class MyController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
+        
+        DatabaseConnection.TestConnection(); 
 
         // /* Include this "using" directive...
         // using MySql.Data.MySqlClient;
