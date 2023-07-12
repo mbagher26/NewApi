@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-
+using System;
 namespace newApi.Models;
 
 
@@ -14,6 +14,7 @@ public class MyController : ControllerBase
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = @"SELECT * FROM Items;";
+        List<TodoItem> items = new List<TodoItem>(); 
         using( var reader = cmd.ExecuteReader())
         {
             while (reader.Read())
@@ -22,10 +23,12 @@ public class MyController : ControllerBase
                     "Reading from table=({0}, {1}, {2})",
                     reader.GetInt32(0),
                     reader.GetString(1),
-                    reader.GetInt32(2)));
+                    reader.GetBoolean(2)
+                    ));
+                    items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) , Name = reader.GetString(reader.GetOrdinal("name")), IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete"))});
                 }
         }
-        return Ok("Hello World");
+        return Ok(items);
     }
 
     [HttpGet("{id}")]
