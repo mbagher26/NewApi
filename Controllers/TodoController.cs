@@ -9,53 +9,26 @@ namespace newApi.Models;
 public class MyController : ControllerBase
 {
 
-
     [HttpGet]
     public IActionResult Get()
     {
-        // string Sql ="select * from items";
-        // MysqlConnect.CreateCommand(Sql);
-
-        var Test =new DatabaseConnection();
-        Test.TestConnection();
-        Console.WriteLine("IActionResult Get()");
-
-        // var connection = MysqlConnect.GetConnection();
-        // connection.CreateCommand();
-
-        // /* Include this "using" directive...
-        // using MySql.Data.MySqlClient;
-        // */
-
-        // string connectionString = "Server=localhost;Port=3306;Database=db;Uid=user;Pwd=qaz";
-
-        // // Best practice is to scope the MySqlConnection to a "using" block
-        // using (MySqlConnection conn = new MySqlConnection(connectionString))
-        // {
-        // // Connect to the database
-        // conn.Open();
-
-        // // Read rows
-        // MySqlCommand selectCommand = new MySqlCommand("SELECT * FROM MyTable", conn);
-        // MySqlDataReader results = selectCommand.ExecuteReader();
-    
-        // // Enumerate over the rows
-        // while(results.Read())
-        // {
-        //     // Console.WriteLine("Column 0: {0} Column 1: {1}", results[0], results[1]);
-            
-        //     Console.WriteLine(results);
-            
-        // }
-        // }   
+        
 
         // Implement logic to retrieve data
         return Ok("Hello World");
     }
 
     [HttpPost]
-    public IActionResult Post([FromBody] string value)
+    public async Task<IActionResult> Post([FromBody] string value)
     {
+
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete) VALUE('ahmad',1);";
+        await cmd.ExecuteNonQueryAsync();
+        var id = (int) cmd.LastInsertedId;
+        Console.WriteLine(id);
+
         // Implement logic to save data
         return Ok();
     }
@@ -73,4 +46,22 @@ public class MyController : ControllerBase
         // Implement logic to delete data
         return Ok();
     }
+
+    public static void BindParams(MySqlCommand cmd)
+    {
+        // cmd.Parameters.Add(new MySqlParameter
+        // {
+        //     ParameterName = "@title",
+        //     DbType = DbType.String,
+        //     Value = Title,
+        // });
+        // cmd.Parameters.Add(new MySqlParameter
+        // {
+        //     ParameterName = "@content",
+        //     DbType = DbType.String,
+        //     Value = Content,
+        // });
+    }
 }
+
+
