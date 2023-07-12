@@ -13,8 +13,15 @@ public class MyController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        
-        DatabaseConnection.TestConnection(); 
+        // string Sql ="select * from items";
+        // MysqlConnect.CreateCommand(Sql);
+
+        var Test =new DatabaseConnection();
+        Test.TestConnection();
+        Console.WriteLine("IActionResult Get()");
+
+        // var connection = MysqlConnect.GetConnection();
+        // connection.CreateCommand();
 
         // /* Include this "using" directive...
         // using MySql.Data.MySqlClient;

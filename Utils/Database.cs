@@ -4,52 +4,86 @@ using MySqlConnector;
 namespace newApi;
 using System.Data;
 
-public static class NewBaseType
+
+public class MysqlConnect
 {
     public static string Connectionstring = "Server=localhost;Port=3306;Database=newapi;Uid=user;Pwd=qaz";
 
 
 
-    private static MySqlConnectionStringBuilder? _instance = null;
+    protected  MySqlConnection? _instance = null;
 
-    public static MySqlConnectionStringBuilder GetConnection()
+    public MySqlConnection GetConnection()
     {
         if (_instance != null)
         {
             return _instance;
         }
-        _instance = new MySqlConnectionStringBuilder(Connectionstring);
+        _instance = new MySqlConnection(Connectionstring);
         return _instance;
     }
+
+    public static void CreateCommand (string sqlSatement)
+    {
+        MySqlCommand command = new MySqlCommand(sqlSatement);
+
+    }
+    
+
+    // public static object Command { get => command; set => command = value; }
 }
 
-public static class DatabaseConnection 
+public class DatabaseConnection : MysqlConnect
 {
-    public static string Connectionstring = "Server=localhost;Port=3306;Database=newapi;Uid=user;Pwd=qaz";
-    public static void TestConnection ()
+    
+    public void TestConnection ()
         {
-
-        try
-        {
-                var connection = new MySqlConnection(Connectionstring);
-                connection.Open();
-                if(connection.State == ConnectionState.Open)
+            try
+            {
+                    
+                    if(_instance?.State == ConnectionState.Open)
+                    {
+                        Console.WriteLine("openinig connection");
+                    }
+                    else
+                    {
+                            Console.WriteLine("error",_instance?.State);
+                       
+                    }
+            }
+            catch(Exception e)
                 {
-                    Console.WriteLine("openinig connection");
+                    Console.WriteLine(e.Message);
                 }
-                else{
-                    Console.WriteLine(connection.State);
-                    // throw new MySqlError(connection.State);
+                finally
+                {  
+                    new MySqlConnection(Connectionstring).Close();
+                    Console.WriteLine("closeing connection");
                 }
-        }
-        catch(Exception e)
-            {
-                Console.WriteLine("error opening connection" + e.Message);
-            }
-            finally
-            {
-                new MySqlConnection(Connectionstring).Close();
-            }
+
+            // try
+            // {
+            //         var connection = new MySqlConnection(Connectionstring);
+            //         connection.Open();
+            //         if(connection.State == ConnectionState.Open)
+            //         {
+            //             Console.WriteLine("openinig connection");
+            //         }
+            //         else{
+            //                 Console.WriteLine("error");
+                       
+            //             }
+            // }
+            // catch(Exception e)
+            //     {
+            //         Console.WriteLine("error opening connection" + e.Message);
+            //     }
+            //     finally
+            //     {  
+            //         new MySqlConnection(Connectionstring).Close();
+            //         // if(Connection.State == ConnectionState.Closed)
+            //         Console.WriteLine("closeing connection");
+            //     }
         }
 }
    
