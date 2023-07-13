@@ -1,13 +1,56 @@
-using Microsoft.AspNetCore.Mvc;
+
 using MySqlConnector;
 using System;
 namespace newApi.Models;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+
 
 
 [ApiController]
 [Route("[controller]")]
-public class MyController : ControllerBase
+public class MyController : Controller
 {
+    //     [HttpGet]
+    // public  IActionResult GetAll()
+    // {
+    //     var connection = MysqlConnect.GetConnection();
+    //     using var cmd = connection.CreateCommand();
+    //     cmd.CommandText = @"SELECT Items.ItemsID, Items.name, Priority.Titele , Items.IsCompelete
+    //                       FROM Items
+    //                       INNERR JOIN Priority ON Items.ItemsID=Priority.PriorityID;";
+    //     List<TodoItem> items = new List<TodoItem>(); 
+    //     using( var reader = cmd.ExecuteReader())
+    //     {
+    //         while (reader.Read())
+    //             {
+    //                 Console.WriteLine(string.Format(
+    //                 "Reading from table=({0}, {1}, {2},{3},{4})",
+    //                 reader.GetInt32(0),
+    //                 reader.GetString(1),
+    //                 reader.GetBoolean(2),
+    //                 reader.GetBoolean(3),
+    //                 reader.GetDateTime(4),
+    //                 reader.GetString(5)
+
+    //                 ));
+    //                 items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) ,
+    //                                         Name = reader.GetString(reader.GetOrdinal("name")),
+    //                                         IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+    //                                         IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+    //                                         Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
+    //                                         Titele = reader.GetString(reader.GetOrdinal("Titele"))
+
+    //                                         });
+    //             }
+    //     }
+    //     return Ok(items);
+    // }
+
+
+
+
     [HttpGet]
     public  IActionResult GetAll()
     {
@@ -20,36 +63,59 @@ public class MyController : ControllerBase
             while (reader.Read())
                 {
                     Console.WriteLine(string.Format(
-                    "Reading from table=({0}, {1}, {2})",
+                    "Reading from table=({0}, {1}, {2},{3},{4})",
                     reader.GetInt32(0),
                     reader.GetString(1),
-                    reader.GetBoolean(2)
+                    reader.GetBoolean(2),
+                    reader.GetBoolean(3),
+                    reader.GetDateTime(4)
+
                     ));
-                    items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) , Name = reader.GetString(reader.GetOrdinal("name")), IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete"))});
+                    items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) ,
+                                            Name = reader.GetString(reader.GetOrdinal("name")),
+                                            IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                                            IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+                                            Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At"))
+                                            });
                 }
         }
         return Ok(items);
     }
 
     [HttpGet("{id}")]
-    public IActionResult Get()
+    public IActionResult GetById(int id)
     {
-        // var connection = MysqlConnect.GetConnection();
-        // using var cmd = connection.CreateCommand();
-        // cmd.CommandText = @"SELECT * FROM items;";
-        // await cmd.ExecuteNonQueryAsync();
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"SELECT * FROM Items;";
+        List<TodoItem> items = new List<TodoItem>();
+        using(var reader = cmd.ExecuteReader())
+        {
+            while(reader.Read())
+            {
+                items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) , 
+                                        Name = reader.GetString(reader.GetOrdinal("name")), 
+                                        IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")), 
+                                        IsDelete = reader.GetBoolean("IsDelete"),
+                                        Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At"))
+                                        });
+
+            }
+        }
         
-        return Ok("Hello World");
+        return Ok(items.FirstOrDefault(x => x.Id == id));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] string value)
+    public async Task<IActionResult> Post([FromBody] string value , bool IsCompelet)
     {
 
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete) VALUE(@value,1);";
+        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete) VALUE(@value,@IsCompelete);";
         cmd.Parameters.AddWithValue("@value", value);
+        cmd.Parameters.AddWithValue("@IsCompelete", IsCompelet);
+
         await cmd.ExecuteNonQueryAsync();
         var id = (int) cmd.LastInsertedId;
         Console.WriteLine(id);
@@ -59,34 +125,52 @@ public class MyController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody] string value)
+    public IActionResult Put(int id, [FromBody] string Name ,bool IsCompelet)
     {
-        // Implement logic to update data
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"UPDATE Items SET name = @name , IsCompelete = @IsCompelete WHERE id = @id;";
+        cmd.Parameters.AddWithValue("@name",Name);
+        cmd.Parameters.AddWithValue("@IsCompelete",IsCompelet);
+        cmd.Parameters.AddWithValue("@id",id);
+        cmd.ExecuteNonQuery();
+
+        
+        
         return Ok();
     }
+
+
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public void Delete(int id, [FromBody] bool isdelete)
     {
-        // Implement logic to delete data
-        return Ok();
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE id = @id;";
+        cmd.Parameters.AddWithValue("@isdelete" , isdelete);
+        cmd.Parameters.AddWithValue("@id" , id);
+        cmd.ExecuteNonQuery();
+
+
     }
 
-    // public static void BindParams(MySqlCommand cmd)
+
+
+        // [HttpDelete("{id}")]
+    // public IActionResult Delete(int id)
     // {
-    //     // cmd.Parameters.Add(new MySqlParameter
-    //     // {
-    //     //     ParameterName = "@title",
-    //     //     DbType = DbType.String,
-    //     //     Value = Title,
-    //     // });
-    //     // cmd.Parameters.Add(new MySqlParameter
-    //     // {
-    //     //     ParameterName = "@content",
-    //     //     DbType = DbType.String,
-    //     //     Value = Content,
-    //     // });
+    //     var connection = MysqlConnect.GetConnection();
+    //     using var cmd = connection.CreateCommand();
+    //     cmd.CommandText = @"DELETE FROM Items WHERE id = @id;";
+    //     cmd.Parameters.AddWithValue("@id",id);
+    //     cmd.ExecuteNonQuery();
+    //     return Ok();
     // }
+
+
+
+   
 }
 
 

@@ -10,7 +10,12 @@ namespace newApi.Models
         public bool IsComplete { get; set; }
         // public DateTime CreatedAt { get; set; }
         
+        public bool IsDelete { get; set;}
         
-        
+        public DateTime Created_At { get; set;}
+
+        public String Titele { get; set;}
     }
+
+    
 }
