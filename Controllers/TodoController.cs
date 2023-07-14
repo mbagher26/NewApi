@@ -12,14 +12,59 @@ using Microsoft.AspNetCore.Mvc;
 [Route("[controller]")]
 public class MyController : Controller
 {
-    //     [HttpGet]
+    [HttpGet]
+    public  IActionResult GetAll()
+    {
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"SELECT *
+                            FROM Items i
+                            INNER JOIN Priority p ON i.ItemsID = p.PriorityID;";
+                            
+        List<TodoItem> items = new List<TodoItem>(); 
+        using( var reader = cmd.ExecuteReader())
+        {
+            
+
+                    if(reader.Read())
+                    {
+                   
+                    Console.WriteLine(string.Format(
+                    "Reading from table=({0}, {1}, {2},{3},{4})",
+                    reader.GetInt32(0),
+                    reader.GetString(1),
+                    reader.GetBoolean(2),
+                    reader.GetBoolean(3),
+                    reader.GetDateTime(4),
+                    reader.GetString(5)
+
+                    ));
+                    items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) ,
+                                            Name = reader.GetString(reader.GetOrdinal("name")),
+                                            IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                                            IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+                                            Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
+                                            Titele = reader.GetString(reader.GetOrdinal("Titele"))
+
+                                            });
+                    }
+                    else
+                    {
+                        Console.WriteLine("can`t read!");
+                    }
+        }
+        return Ok(items);
+    }
+
+
+
+
+    // [HttpGet]
     // public  IActionResult GetAll()
     // {
     //     var connection = MysqlConnect.GetConnection();
     //     using var cmd = connection.CreateCommand();
-    //     cmd.CommandText = @"SELECT Items.ItemsID, Items.name, Priority.Titele , Items.IsCompelete
-    //                       FROM Items
-    //                       INNERR JOIN Priority ON Items.ItemsID=Priority.PriorityID;";
+    //     cmd.CommandText = @"SELECT * FROM Items;";
     //     List<TodoItem> items = new List<TodoItem>(); 
     //     using( var reader = cmd.ExecuteReader())
     //     {
@@ -31,56 +76,19 @@ public class MyController : Controller
     //                 reader.GetString(1),
     //                 reader.GetBoolean(2),
     //                 reader.GetBoolean(3),
-    //                 reader.GetDateTime(4),
-    //                 reader.GetString(5)
+    //                 reader.GetDateTime(4)
 
     //                 ));
     //                 items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) ,
     //                                         Name = reader.GetString(reader.GetOrdinal("name")),
     //                                         IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
     //                                         IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-    //                                         Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
-    //                                         Titele = reader.GetString(reader.GetOrdinal("Titele"))
-
+    //                                         Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At"))
     //                                         });
     //             }
     //     }
     //     return Ok(items);
     // }
-
-
-
-
-    [HttpGet]
-    public  IActionResult GetAll()
-    {
-        var connection = MysqlConnect.GetConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT * FROM Items;";
-        List<TodoItem> items = new List<TodoItem>(); 
-        using( var reader = cmd.ExecuteReader())
-        {
-            while (reader.Read())
-                {
-                    Console.WriteLine(string.Format(
-                    "Reading from table=({0}, {1}, {2},{3},{4})",
-                    reader.GetInt32(0),
-                    reader.GetString(1),
-                    reader.GetBoolean(2),
-                    reader.GetBoolean(3),
-                    reader.GetDateTime(4)
-
-                    ));
-                    items.Add(new TodoItem {Id = reader.GetInt32(reader.GetOrdinal("id")) ,
-                                            Name = reader.GetString(reader.GetOrdinal("name")),
-                                            IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
-                                            IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-                                            Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At"))
-                                            });
-                }
-        }
-        return Ok(items);
-    }
 
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
@@ -107,14 +115,16 @@ public class MyController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] string value , bool IsCompelet)
+    public async Task<IActionResult> Post([FromBody] string value , bool IsCompelet , int PriorityID)
     {
 
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete) VALUE(@value,@IsCompelete);";
+        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete,PriorityID) VALUE(@value,@IsCompelete,@PriorityID);";
         cmd.Parameters.AddWithValue("@value", value);
         cmd.Parameters.AddWithValue("@IsCompelete", IsCompelet);
+        cmd.Parameters.AddWithValue("@PriorityID", PriorityID);
+
 
         await cmd.ExecuteNonQueryAsync();
         var id = (int) cmd.LastInsertedId;
@@ -123,6 +133,7 @@ public class MyController : Controller
         
         return Ok();
     }
+
 
     [HttpPut("{id}")]
     public IActionResult Put(int id, [FromBody] string Name ,bool IsCompelet)
