@@ -65,6 +65,13 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@id",id);
+        var count = (long) cmd.ExecuteScalar();
+        if(count == 0)
+        {
+            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+        }
         cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
                             FROM Items i
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID;";
@@ -117,11 +124,17 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@id",id);
+        var count = (long) cmd.ExecuteScalar();
+        if(count == 0)
+        {
+            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+        }
         cmd.CommandText = @"UPDATE Items SET name = @name , IsCompelete = @IsCompelete , PriorityID = @PriorityID WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name",Name);
         cmd.Parameters.AddWithValue("@IsCompelete",IsCompelet);
-        cmd.Parameters.AddWithValue("PriorityID",PriorityID);
-        cmd.Parameters.AddWithValue("@id",id);
+        cmd.Parameters.AddWithValue("PriorityID",PriorityID);     
         cmd.ExecuteNonQuery();
 
         
@@ -130,20 +143,25 @@ public class MyController : Controller
     }
 
 
-
     [HttpDelete("{id}")]
     public void Delete(int id, [FromBody] bool isdelete)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@id" , id);
+        var count = (long)cmd.ExecuteScalar();
+        if(count == 0)
+        {
+            Console.WriteLine($"No record found with ID: {id}");
+        }  
+
         cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@isdelete" , isdelete);
-        cmd.Parameters.AddWithValue("@id" , id);
+        // cmd.Parameters.AddWithValue("@id" , id);
         cmd.ExecuteNonQuery();
-
-
     }
-   
+    
 }
 
 
