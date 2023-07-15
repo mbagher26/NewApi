@@ -144,7 +144,7 @@ public class MyController : Controller
 
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id ,bool isdelete)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -158,7 +158,7 @@ public class MyController : Controller
         }
 
         cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@isdelete" , true);
+        cmd.Parameters.AddWithValue("@isdelete" , isdelete);
         await cmd.ExecuteNonQueryAsync();
 
         return Ok(id);
