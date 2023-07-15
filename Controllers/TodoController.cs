@@ -74,7 +74,7 @@ public class MyController : Controller
         }
         cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
                             FROM Items i
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID;";
+                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID WHERE ItemsID=@id;";
         List<TodoItem> items = new List<TodoItem>();
         using(var reader = cmd.ExecuteReader())
         {
@@ -94,7 +94,7 @@ public class MyController : Controller
             }
         }
         
-        return Ok(items.FirstOrDefault(x => x.ItemsID == id));
+        return Ok(items);
     }
 
     [HttpPost]
