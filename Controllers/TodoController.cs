@@ -61,16 +61,20 @@ public class MyController : Controller
 
 
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id",id);
-        var count = (long) cmd.ExecuteScalar();
-        if(count == 0)
+        var count = await cmd.ExecuteScalarAsync();
+        if(count != null)
         {
+            count = (long)count;
+            if(count.Equals(0))
+            {
             return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+            }
         }
         cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
                             FROM Items i
@@ -120,17 +124,21 @@ public class MyController : Controller
 
 
     [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody] string Name ,bool IsCompelet ,int PriorityID)
+    public async Task<IActionResult> Put(int id, [FromBody] string Name ,bool IsCompelet ,int PriorityID)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id",id);
-        var count = (long) cmd.ExecuteScalar();
-        if(count == 0)
+        var count = await cmd.ExecuteScalarAsync();
+        if(count != null)
         {
-            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+            count = (long)count;
+            if(count.Equals(0)){
+                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+            }
         }
+
         cmd.CommandText = @"UPDATE Items SET name = @name , IsCompelete = @IsCompelete , PriorityID = @PriorityID WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name",Name);
         cmd.Parameters.AddWithValue("@IsCompelete",IsCompelet);
