@@ -144,24 +144,43 @@ public class MyController : Controller
 
 
     [HttpDelete("{id}")]
-    public void Delete(int id, [FromBody] bool isdelete)
+    public async Task<IActionResult> Delete(int id)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id" , id);
-        var count = (long)cmd.ExecuteScalar();
-        if(count == 0)
-        {
-            Console.WriteLine($"No record found with ID: {id}");
-        }  
+        var count = await cmd.ExecuteScalarAsync();
+        if(count != null) {
+            count = (long) count;
+            if(count.Equals(0))
+                return NotFound($"No record found with ID: {id}");
+        }
 
         cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@isdelete" , isdelete);
-        // cmd.Parameters.AddWithValue("@id" , id);
-        cmd.ExecuteNonQuery();
+        cmd.Parameters.AddWithValue("@isdelete" , true);
+        await cmd.ExecuteNonQueryAsync();
+
+        return Ok(id);
     }
     
+
+
+    // [HttpDelete("{id}")]
+    // public IActionResult Delete(int id)
+    // {
+    //     var connection = MysqlConnect.GetConnection();
+    //     using var cmd = connection.CreateCommand();
+    //     cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE Id = {id};";
+    //     var count = (long)cmd.ExecuteScalar();
+    //     if (count == 0)
+    // {
+    //     return NotFound($"No record found with ID: {id}");
+    // }
+    // cmd.CommandText = $"DELETE FROM Items WHERE Id = {id}";
+    // cmd.ExecuteNonQuery();
+    // return NoContent();
+    // }
 }
 
 
