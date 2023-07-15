@@ -113,10 +113,7 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@IsDelete", IsDelete);
         cmd.Parameters.AddWithValue("@PriorityID", PriorityID);
 
-
         await cmd.ExecuteNonQueryAsync();
-        var id = (int) cmd.LastInsertedId;
-        Console.WriteLine(id);
 
         
         return Ok();

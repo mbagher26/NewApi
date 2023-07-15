@@ -17,7 +17,7 @@ namespace newApi.Models
         public DateTime Update_At_At { get; set;}
 
         public int PriorityID { get; set;}
-        public String Titele { get; set;}
+        public String? Titele { get; set;}
 
         // public int count { get; set;}
     }
