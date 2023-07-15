@@ -70,12 +70,12 @@ public class MyController : Controller
         var count = await cmd.ExecuteScalarAsync();
         if(count != null)
         {
-            count = (long)count;
-            if(count.Equals(0))
-            {
-            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
+            var number = (long)count;
+            if(number == 0){
+                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
             }
         }
+
         cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
                             FROM Items i
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID WHERE ItemsID=@id;";
@@ -130,8 +130,8 @@ public class MyController : Controller
         var count = await cmd.ExecuteScalarAsync();
         if(count != null)
         {
-            count = (long)count;
-            if(count.Equals(0)){
+            var number = (long)count;
+            if(number == 0){
                 return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
             }
         }
@@ -157,8 +157,8 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@id" , id);
         var count = await cmd.ExecuteScalarAsync();
         if(count != null) {
-            count = (long) count;
-            if(count.Equals(0))
+            var number = (long) count;
+            if(number.Equals(0))
                 return NotFound($"No record found with ID: {id}");
         }
 
@@ -171,21 +171,7 @@ public class MyController : Controller
     
 
 
-    // [HttpDelete("{id}")]
-    // public IActionResult Delete(int id)
-    // {
-    //     var connection = MysqlConnect.GetConnection();
-    //     using var cmd = connection.CreateCommand();
-    //     cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE Id = {id};";
-    //     var count = (long)cmd.ExecuteScalar();
-    //     if (count == 0)
-    // {
-    //     return NotFound($"No record found with ID: {id}");
-    // }
-    // cmd.CommandText = $"DELETE FROM Items WHERE Id = {id}";
-    // cmd.ExecuteNonQuery();
-    // return NoContent();
-    // }
+
 }
 
 
