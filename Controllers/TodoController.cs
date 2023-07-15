@@ -7,12 +7,12 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 
-
+[Area("V1")]
 [ApiController]
-[Route("[controller]")]
+[Route("api/[Area]/todo")]
 public class MyController : Controller
 {
-    [HttpGet]
+    [HttpGet("[action]")]
     public  IActionResult GetAll()
     {
         var connection = MysqlConnect.GetConnection();
@@ -52,10 +52,13 @@ public class MyController : Controller
                                             Update_At_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
                                             PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID"))
                                             });
+
+
                     }
                     
         }
-        return Ok(items);
+
+        return Ok(items.OrderBy(x => x.ItemsID));
     }
 
 
@@ -102,19 +105,18 @@ public class MyController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] string value , bool IsCompelet , bool IsDelete, int PriorityID )
+    public async Task<IActionResult> Post([FromBody] int id, string value , bool IsCompelet , bool IsDelete, int PriorityID )
     {
 
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"INSERT INTO `Items` (name,IsCompelete,IsDelete,PriorityID) VALUE(@value,@IsCompelete,@IsDelete,@PriorityID);";
+        cmd.CommandText = @"INSERT INTO `Items` (ItemsID,name,IsCompelete,IsDelete,PriorityID) VALUE(NULL,@value,@IsCompelete,@IsDelete,@PriorityID);";
         cmd.Parameters.AddWithValue("@value", value);
         cmd.Parameters.AddWithValue("@IsCompelete", IsCompelet);
         cmd.Parameters.AddWithValue("@IsDelete", IsDelete);
         cmd.Parameters.AddWithValue("@PriorityID", PriorityID);
-
         await cmd.ExecuteNonQueryAsync();
-
+        
         
         return Ok();
     }
