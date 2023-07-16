@@ -17,7 +17,7 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID, i.Description
                             FROM Items i
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID;";
                             
@@ -30,7 +30,7 @@ public class MyController : Controller
                     {
                    
                     Console.WriteLine(string.Format(
-                    "Reading from table=({0}, {1}, {2},{3},{4},{5},{6},{7})",
+                    "Reading from table=({0}, {1}, {2},{3},{4},{5},{6},{7},{8})",
                     reader.GetInt32(0),
                     reader.GetString(1),
                     reader.GetBoolean(2),
@@ -38,7 +38,9 @@ public class MyController : Controller
                     reader.GetString(4),                    
                     reader.GetDateTime(5),
                     reader.GetDateTime(6),
-                    reader.GetInt32(7)
+                    reader.GetInt32(7),
+                    reader.GetString(8)
+
                     
 
                     ));
@@ -50,7 +52,9 @@ public class MyController : Controller
                                             Titele = reader.GetString(reader.GetOrdinal("Titele")),                                       
                                             Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                                             Update_At_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
-                                            PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID"))
+                                            PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
+                                            Description = reader.GetString(reader.GetOrdinal("Description")),
+
                                             });
 
 
@@ -79,7 +83,7 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID, i.Description
                             FROM Items i
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID WHERE ItemsID=@id;";
         List<TodoItem> items = new List<TodoItem>();
@@ -95,7 +99,9 @@ public class MyController : Controller
                                         Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                                         PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
                                         Update_At_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),  
-                                        Titele = reader.GetString(reader.GetOrdinal("Titele"))
+                                        Titele = reader.GetString(reader.GetOrdinal("Titele")),
+                                        Description = reader.GetString(reader.GetOrdinal("Description"))
+
                                         });
 
             }
@@ -105,16 +111,18 @@ public class MyController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] int id, string value , bool IsCompelet , bool IsDelete, int PriorityID )
+    public async Task<IActionResult> Post([FromBody] int id, string Name , bool IsCompelet , bool IsDelete, int PriorityID, string Description )
     {
 
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"INSERT INTO `Items` (ItemsID,name,IsCompelete,IsDelete,PriorityID) VALUE(NULL,@value,@IsCompelete,@IsDelete,@PriorityID);";
-        cmd.Parameters.AddWithValue("@value", value);
+        cmd.CommandText = @"INSERT INTO `Items` (ItemsID,name,IsCompelete,IsDelete,PriorityID,Description) VALUE(NULL,@Name,@IsCompelete,@IsDelete,@PriorityID,@Description);";
+        cmd.Parameters.AddWithValue("@Name", Name);
         cmd.Parameters.AddWithValue("@IsCompelete", IsCompelet);
         cmd.Parameters.AddWithValue("@IsDelete", IsDelete);
         cmd.Parameters.AddWithValue("@PriorityID", PriorityID);
+        cmd.Parameters.AddWithValue("@Description", Description);
+
         await cmd.ExecuteNonQueryAsync();
         
         
@@ -123,7 +131,7 @@ public class MyController : Controller
 
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, [FromBody] string Name ,bool IsCompelet ,int PriorityID)
+    public async Task<IActionResult> Put(int id, [FromBody] string Name ,bool IsCompelet ,int PriorityID ,string Description)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -138,10 +146,12 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"UPDATE Items SET name = @name , IsCompelete = @IsCompelete , PriorityID = @PriorityID WHERE ItemsID = @id;";
+        cmd.CommandText = @"UPDATE Items SET name = @name , IsCompelete = @IsCompelete , PriorityID = @PriorityID , Description = @Description WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name",Name);
         cmd.Parameters.AddWithValue("@IsCompelete",IsCompelet);
         cmd.Parameters.AddWithValue("PriorityID",PriorityID);     
+        cmd.Parameters.AddWithValue("Description",Description);     
+
         cmd.ExecuteNonQuery();
 
         
@@ -171,9 +181,6 @@ public class MyController : Controller
         return Ok(id);
     }
     
-
-
-
 }
 
 
