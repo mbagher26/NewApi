@@ -61,7 +61,7 @@ public class MyController : Controller
     }
 
 
-    [HttpGet("{id}")]
+    [HttpGet]
     public async Task<IActionResult> GetById(int id)
     {
         var connection = MysqlConnect.GetConnection();
