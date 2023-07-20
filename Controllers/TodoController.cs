@@ -61,7 +61,7 @@ public class MyController : Controller
     }
 
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var connection = MysqlConnect.GetConnection();
@@ -123,7 +123,7 @@ public class MyController : Controller
     }
 
     
-    [HttpPut("{id}")]
+    [HttpPut]
     public async Task<IActionResult> Put(TodoItemModel model)
     {
         var connection = MysqlConnect.GetConnection();
