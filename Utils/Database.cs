@@ -11,7 +11,7 @@ public class MysqlConnect
     private MysqlConnect(){}
 
     private static MySqlConnection? _instance = null;
-
+    
     public static MySqlConnection GetConnection()
     {
         if (_instance == null) // برای اینکه اتصال دیتابیس فقط یکبار ساخته شود و با هر بار استفاده دوباره ساخته نشود

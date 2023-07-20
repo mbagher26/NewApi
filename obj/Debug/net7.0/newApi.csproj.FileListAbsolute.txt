@@ -32,3 +32,7 @@
 /home/mohamad/newpriject/newApi/newApi/obj/Debug/net7.0/newApi.genruntimeconfig.cache
 /home/mohamad/newpriject/newApi/newApi/obj/Debug/net7.0/ref/newApi.dll
 /home/mohamad/newpriject/newApi/newApi/bin/Debug/net7.0/MySqlConnector.dll
+/home/mohamad/newpriject/newApi/newApi/bin/Debug/net7.0/Microsoft.AspNetCore.JsonPatch.dll
+/home/mohamad/newpriject/newApi/newApi/bin/Debug/net7.0/Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+/home/mohamad/newpriject/newApi/newApi/bin/Debug/net7.0/Newtonsoft.Json.dll
+/home/mohamad/newpriject/newApi/newApi/bin/Debug/net7.0/Newtonsoft.Json.Bson.dll
