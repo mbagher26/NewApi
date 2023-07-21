@@ -17,7 +17,7 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Titele, i.Description, i.StatusID, s.titeleStatus
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
                             FROM Items i
                             INNER JOIN Status s ON i.StatusID = s.StatusID
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID ;";
@@ -52,10 +52,10 @@ public class MyController : Controller
                                             Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                                             Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),                                                                      
                                             PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
-                                            Titele = reader.GetString(reader.GetOrdinal("Titele")),
+                                            Title = reader.GetString(reader.GetOrdinal("Title")),
                                             Description = reader.GetString(reader.GetOrdinal("Description")),
                                             StatusID = reader.GetInt32(reader.GetOrdinal("StatusID")),
-                                            TiteleStatus = reader.GetString(reader.GetOrdinal("titeleStatus"))                                            
+                                            TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus"))                                            
                                             });
                     }
                     
@@ -81,7 +81,7 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.titeleStatus,p.Titele
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
                             FROM Items i
                             INNER JOIN Status s ON i.StatusID = s.StatusID
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
@@ -100,9 +100,9 @@ public class MyController : Controller
                                         Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                                         PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
                                         Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),  
-                                        Titele = reader.GetString(reader.GetOrdinal("Titele")),
+                                        Title = reader.GetString(reader.GetOrdinal("Title")),
                                         Description = reader.GetString(reader.GetOrdinal("Description")),
-                                        TiteleStatus = reader.GetString(reader.GetOrdinal("titeleStatus")),
+                                        TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus")),
                                         StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
 
                                         });
@@ -115,16 +115,17 @@ public class MyController : Controller
 
 
     [HttpPost]
-    public async Task<IActionResult> Post(TodoItemModel model )
+    public async Task<IActionResult> Post(TodoItemPostModel model )
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"INSERT INTO `Items` (ItemsID,name,IsCompelete,IsDelete,PriorityID,Description) VALUE(NULL,@Name,@IsCompelete,@IsDelete,@PriorityID,@Description);";
+        cmd.CommandText = @"INSERT INTO `Items` (name,Created_At,PriorityID,StatusID,Description) VALUE(@Name,@Created_At,@PriorityID,@StatusID,@Description);";
         cmd.Parameters.AddWithValue("@Name", model.Name);
-        cmd.Parameters.AddWithValue("@IsCompelete", model.IsComplete);
-        cmd.Parameters.AddWithValue("@IsDelete", model.IsDelete);
+        cmd.Parameters.AddWithValue("@Created_At", model.Created_At);
         cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
+        cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
         cmd.Parameters.AddWithValue("@Description", model.Description);
+
 
         await cmd.ExecuteNonQueryAsync();
         
