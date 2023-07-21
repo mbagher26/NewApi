@@ -18,7 +18,8 @@ namespace newApi.Models
 
         public int PriorityID { get; set;}
         public String? Titele { get; set;}
-
+        public int StatusID { get; set;}
+        public String? TiteleStatus { get; set;}
         
     }
 

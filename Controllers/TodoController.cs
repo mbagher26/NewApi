@@ -11,15 +11,16 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[Area]/todo")]
 public class MyController : Controller
-{
+{   
     [HttpGet("[action]")]
     public  IActionResult GetAll()
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID, i.Description
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Titele, i.Description, i.StatusID, s.titeleStatus
                             FROM Items i
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID;";
+                            INNER JOIN Status s ON i.StatusID = s.StatusID
+                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID ;";
                             
         List<TodoItem> items = new List<TodoItem>(); 
         using( var reader = cmd.ExecuteReader())
@@ -29,29 +30,32 @@ public class MyController : Controller
                     {
                    
                     Console.WriteLine(string.Format(
-                    "Reading from table=({0}, {1}, {2},{3},{4},{5},{6},{7},{8})",
+                    "Reading from table=({0}, {1}, {2},{3},{4},{5},{6},{7},{8},{9},{10})",
                     reader.GetInt32(0),
                     reader.GetString(1),
                     reader.GetBoolean(2),
                     reader.GetBoolean(3),
-                    reader.GetString(4),                    
+                    reader.GetDateTime(4),
                     reader.GetDateTime(5),
-                    reader.GetDateTime(6),
-                    reader.GetInt32(7),
-                    reader.GetString(8)
-
+                    reader.GetInt32(6),
+                    reader.GetString(7),
+                    reader.GetString(8),                    
+                    reader.GetInt32(9),
+                    reader.GetString(10)                   
+                
                     ));
                     items.Add(new TodoItem {
                                             ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
                                             Name = reader.GetString(reader.GetOrdinal("name")),
                                             IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
                                             IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-                                            Titele = reader.GetString(reader.GetOrdinal("Titele")),                                       
                                             Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
-                                            Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
+                                            Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),                                                                      
                                             PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
+                                            Titele = reader.GetString(reader.GetOrdinal("Titele")),
                                             Description = reader.GetString(reader.GetOrdinal("Description")),
-
+                                            StatusID = reader.GetInt32(reader.GetOrdinal("StatusID")),
+                                            TiteleStatus = reader.GetString(reader.GetOrdinal("titeleStatus"))                                            
                                             });
                     }
                     
@@ -77,9 +81,12 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, p.Titele, i.Created_At, i.Update_At, i.PriorityID, i.Description
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.titeleStatus,p.Titele
                             FROM Items i
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID WHERE ItemsID=@id;";
+                            INNER JOIN Status s ON i.StatusID = s.StatusID
+                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
+
+                            WHERE ItemsID=@id;";
         List<TodoItem> items = new List<TodoItem>();
         using(var reader = cmd.ExecuteReader())
         {
@@ -94,7 +101,9 @@ public class MyController : Controller
                                         PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
                                         Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),  
                                         Titele = reader.GetString(reader.GetOrdinal("Titele")),
-                                        Description = reader.GetString(reader.GetOrdinal("Description"))
+                                        Description = reader.GetString(reader.GetOrdinal("Description")),
+                                        TiteleStatus = reader.GetString(reader.GetOrdinal("titeleStatus")),
+                                        StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
 
                                         });
 
