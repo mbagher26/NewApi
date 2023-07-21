@@ -134,7 +134,7 @@ public class MyController : Controller
 
     
     [HttpPut]
-    public async Task<IActionResult> Put(TodoItemModel model)
+    public async Task<IActionResult> Update(TodoItemUpdateModel model)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -149,11 +149,14 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"UPDATE Items SET name = @name ,  Description = @Description WHERE ItemsID = @id;";
+        cmd.CommandText = @"UPDATE Items SET name = @name , Description = @Description, PriorityID = @PriorityID, StatusID = @StatusID, Update_At = @Update_At  WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name",model.Name);
-        // cmd.Parameters.AddWithValue("@IsCompelete",IsCompelet);
-        // cmd.Parameters.AddWithValue("PriorityID",PriorityID);     
-        cmd.Parameters.AddWithValue("Description",model.Description);     
+        cmd.Parameters.AddWithValue("@Description",model.Description);     
+        cmd.Parameters.AddWithValue("@PriorityID",model.PriorityID);
+        cmd.Parameters.AddWithValue("@StatusID",model.StatusID);
+        cmd.Parameters.AddWithValue("@Update_At",model.Update_At);
+        
+
 
         cmd.ExecuteNonQuery();
         return Ok("بروزرسانی با موفقیت انجام شد");
