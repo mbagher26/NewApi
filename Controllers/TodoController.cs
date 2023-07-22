@@ -204,8 +204,7 @@ public class MyController : Controller
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
         {
-            var number = (long)count;
-            if (number.Equals(0))
+            if ((Int64)count == 0)
             {
                 return NotFound($"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}");
             }
