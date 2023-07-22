@@ -65,6 +65,7 @@ namespace newApi.Models
         public int  ItemsID { get; set; }
 
         public bool IsDelete { get; set;}
+        public int StatusID { get; set;}
 
     }
 }
