@@ -188,6 +188,35 @@ public class MyController : Controller
         
         return Ok("حذف با موفقیت انجام شد");
     }
+
+
+    [HttpDelete]
+    public async Task<IActionResult> Activate(TodoItemActivateMethod model)
+    {
+        var connection =MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText =$"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@id" , model.ItemsID);
+        var count = await cmd.ExecuteScalarAsync();
+        if(count != null){
+            var number = (long) count;
+            if(number.Equals(0))
+            {
+                return NotFound($"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}");
+            }
+        }
+        try
+        {
+        cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("IsDelete",model.IsDelete);
+        await cmd.ExecuteNonQueryAsync();
+        }
+        catch(Exception e){
+
+            Console.WriteLine(e.Message + "ناموفق بود");
+        }
+        return Ok("عملیات با موفقیت انجام شد");
+    }
 }
 
 
