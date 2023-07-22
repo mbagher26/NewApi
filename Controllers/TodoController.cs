@@ -183,19 +183,15 @@ public class MyController : Controller
         }
         try
         {
-            cmd.CommandText = @"UPDATEh Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
+            cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
             cmd.Parameters.AddWithValue("@isdelete", true);
             await cmd.ExecuteNonQueryAsync();
+            return Ok("عملیات با موفقیت انجام شد");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message + "عملیات حذف ناموفق بود");
+            return Ok(e.Message + "عملیات ناموفق");
         }
-        finally
-        {
-            Console.WriteLine("حذف با موفقیت انجام شد");
-        }
-        return Ok();
     }
 
 
@@ -220,19 +216,12 @@ public class MyController : Controller
             cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
             cmd.Parameters.AddWithValue("IsDelete", model.IsDelete);
             await cmd.ExecuteNonQueryAsync();
+            return Ok("عملیات با موفقیت انجام شد");
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return  StatusCode(StatusCodes.Status500InternalServerError);
-
-            // return Internal(e.Message + "ناموفق بود");
-        }
-        finally
-        {
-            Console.WriteLine("Unsuccessful");
-        }
-        
-        return Ok("عملیات با موفقیت انجام شد");
+            return Ok(e.Message + "عملیات ناموفق ");
+        }        
     }
 }
 
