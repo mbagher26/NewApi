@@ -211,8 +211,9 @@ public class MyController : Controller
         }
         try
         {
-            cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
+            cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete , StatusID = @StatusID WHERE ItemsID = @id;";
             cmd.Parameters.AddWithValue("IsDelete", model.IsDelete);
+            cmd.Parameters.AddWithValue("StatusID", model.StatusID);
             await cmd.ExecuteNonQueryAsync();
             return Ok("عملیات با موفقیت انجام شد");
         }
