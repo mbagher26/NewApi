@@ -176,8 +176,8 @@ public class MyController : Controller
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
         {
-            var number = (long)count;
-            if (number.Equals(0))
+            
+            if ((Int64)count == 0)
                 return NotFound($"No record found with ID: {id}");
         }
         try
