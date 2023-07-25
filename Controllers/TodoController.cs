@@ -11,10 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[Area]/todo")]
 public class MyController : Controller
-{
-    
+{     
     [HttpGet("[action]")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -24,9 +23,9 @@ public class MyController : Controller
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
 
         List<TodoItem> items = new List<TodoItem>();
-        using (var reader = cmd.ExecuteReader())
+        using (var reader = await cmd.ExecuteReaderAsync())
         {
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 items.Add(new TodoItem
                 {
@@ -50,58 +49,58 @@ public class MyController : Controller
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
-    {
-        var connection = MysqlConnect.GetConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@id", id);
-        var count = await cmd.ExecuteScalarAsync();
-        //استفاده از متد ExecuteScalar()
-        //این متد معمولا زمانی استفاده می شود که انتظار یک مقدار واحد را دارد مثل زمانی که از 
-        // متدهای کانت و سام و اوریج در جمله اس کیو ال استفاده کردیم 
-
-        // عبارت Async 
-        // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
-        if (count != null)
-        {
-            if ((Int64)count == 0)
-            {
-                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");
-            }
-        }
-
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
-                            FROM Items i
-                            INNER JOIN Status s ON i.StatusID = s.StatusID
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
-
-                            WHERE ItemsID=@id;";
-        List<TodoItem> items = new List<TodoItem>();
-        
-        using (var reader = cmd.ExecuteReader())
-        {
-            while (reader.Read())
-            {
-                items.Add(new TodoItem
+    {   
+        try{
+                using(var connection = MysqlConnect.GetConnection())
+                using(var cmd = connection.CreateCommand())
                 {
-                    ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
-                    Name = reader.GetString(reader.GetOrdinal("name")),
-                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
-                    IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-                    Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
-                    PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
-                    Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
-                    Title = reader.GetString(reader.GetOrdinal("Title")),
-                    Description = reader.GetString(reader.GetOrdinal("Description")),
-                    TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus")),
-                    StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
+                    cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+                    cmd.Parameters.AddWithValue("@id", id);
+                    var count = await cmd.ExecuteScalarAsync();
+                    //استفاده از متد ExecuteScalar()
+                    //این متد معمولا زمانی استفاده می شود که انتظار یک مقدار واحد را دارد مثل زمانی که از 
+                    // متدهای کانت و سام و اوریج در جمله اس کیو ال استفاده کردیم 
 
-                });
+                    // عبارت Async 
+                    // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
+                    if (count != null || (long)count == 0)
+                    {                                         
+                            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");                        
+                    }
 
+                    cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
+                                        FROM Items i
+                                        INNER JOIN Status s ON i.StatusID = s.StatusID
+                                        INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
+                                        WHERE ItemsID=@id;";
+                    List<TodoItem> items = new List<TodoItem>();
+                    
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            items.Add(new TodoItem
+                            {
+                                ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
+                                Name = reader.GetString(reader.GetOrdinal("name")),
+                                IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                                IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+                                Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
+                                PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
+                                Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Description = reader.GetString(reader.GetOrdinal("Description")),
+                                TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus")),
+                                StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
+                            });
+                        }
+                    }
+                    return Ok(items);
             }
         }
-
-        return Ok(items);
+        catch(Exception ){
+            return StatusCode(500,"خطایی در سرور رخ داده است");
+        }
     }
 
 
@@ -122,7 +121,6 @@ public class MyController : Controller
         return Ok("ثبت با موفقیت انجام شد");
 
         }catch(Exception){
-
             return BadRequest("خطا در ثبت اطلاعات");
         }
     }
