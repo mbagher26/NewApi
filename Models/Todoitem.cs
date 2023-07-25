@@ -69,9 +69,4 @@ namespace newApi.Models
 
     }
 
-    public class TodoItemviewModel
-    {
-        public string Error { get; set;}
-
-    }
 }
