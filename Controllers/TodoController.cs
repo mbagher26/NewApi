@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 public class MyController : Controller
 {
     
-
     [HttpGet("[action]")]
     public IActionResult GetAll()
     {
@@ -119,16 +118,14 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
         cmd.Parameters.AddWithValue("@Description", model.Description);
 
-
         await cmd.ExecuteNonQueryAsync();
-
         return Ok("ثبت با موفقیت انجام شد");
-        }catch(Exception e){
 
-            return Ok(e.Message);
+        }catch(Exception){
+
+            return BadRequest("خطا در ثبت اطلاعات");
         }
     }
-
 
 
     [HttpPut]
@@ -146,7 +143,7 @@ public class MyController : Controller
                 return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{model.ItemsID}");
             }
         }
-
+        try{
         cmd.CommandText = @"UPDATE Items SET name = @name , Description = @Description, PriorityID = @PriorityID, StatusID = @StatusID, Update_At = @Update_At  WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name", model.Name);
         cmd.Parameters.AddWithValue("@Description", model.Description);
@@ -156,6 +153,10 @@ public class MyController : Controller
 
         cmd.ExecuteNonQuery();
         return Ok("بروزرسانی با موفقیت انجام شد");
+
+        }catch(Exception){
+            return BadRequest("خطا در بروزرسانی اطلاعلت");
+        }
     }
 
 
@@ -180,9 +181,9 @@ public class MyController : Controller
             await cmd.ExecuteNonQueryAsync();
             return Ok("عملیات با موفقیت انجام شد");
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            return Ok(e.Message + "عملیات ناموفق");
+            return BadRequest("خطا در اجرای عملیات حذف");
         }
     }
 
@@ -212,9 +213,9 @@ public class MyController : Controller
             // زمانی جمله اس کیو ال پس از اجرا مقداری را بر نمیگرداند استفاده می شود مثل دیلیت و آپدیت و اینزرت
             return Ok("عملیات با موفقیت انجام شد");
         }
-        catch (Exception e)
+        catch (Exception )
         {
-            return Ok(e.Message + "عملیات ناموفق ");
+            return BadRequest("عملیات ناموفق ");
         }        
     }
 }

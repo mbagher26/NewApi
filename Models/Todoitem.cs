@@ -68,4 +68,10 @@ namespace newApi.Models
         public int StatusID { get; set;}
 
     }
+
+    public class TodoItemviewModel
+    {
+        public string Error { get; set;}
+
+    }
 }
