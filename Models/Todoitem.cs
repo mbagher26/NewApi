@@ -1,5 +1,3 @@
-using System;
-
 namespace newApi.Models
 {
     public class TodoItem
@@ -69,9 +67,4 @@ namespace newApi.Models
 
     }
 
-    public class TodoItemviewModel
-    {
-        public string Error { get; set;}
-
-    }
 }
