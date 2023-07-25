@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[Area]/todo")]
 public class MyController : Controller
 {
+    
+
     [HttpGet("[action]")]
     public IActionResult GetAll()
     {
@@ -20,30 +22,13 @@ public class MyController : Controller
         cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
                             FROM Items i
                             INNER JOIN Status s ON i.StatusID = s.StatusID
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID ;";
+                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
 
         List<TodoItem> items = new List<TodoItem>();
         using (var reader = cmd.ExecuteReader())
         {
-
             while (reader.Read())
             {
-
-                Console.WriteLine(string.Format(
-                "Reading from table=({0}, {1}, {2},{3},{4},{5},{6},{7},{8},{9},{10})",
-                reader.GetInt32(0),
-                reader.GetString(1),
-                reader.GetBoolean(2),
-                reader.GetBoolean(3),
-                reader.GetDateTime(4),
-                reader.GetDateTime(5),
-                reader.GetInt32(6),
-                reader.GetString(7),
-                reader.GetString(8),
-                reader.GetInt32(9),
-                reader.GetString(10)
-
-                ));
                 items.Add(new TodoItem
                 {
                     ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
@@ -59,10 +44,8 @@ public class MyController : Controller
                     TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus"))
                 });
             }
-
         }
-
-        return Ok(items.OrderBy(x => x.ItemsID));
+        return Ok(items);
     }
 
 
@@ -74,6 +57,12 @@ public class MyController : Controller
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id", id);
         var count = await cmd.ExecuteScalarAsync();
+        //استفاده از متد ExecuteScalar()
+        //این متد معمولا زمانی استفاده می شود که انتظار یک مقدار واحد را دارد مثل زمانی که از 
+        // متدهای کانت و سام و اوریج در جمله اس کیو ال استفاده کردیم 
+
+        // عبارت Async 
+        // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
         if (count != null)
         {
             if ((Int64)count == 0)
@@ -89,6 +78,7 @@ public class MyController : Controller
 
                             WHERE ItemsID=@id;";
         List<TodoItem> items = new List<TodoItem>();
+        
         using (var reader = cmd.ExecuteReader())
         {
             while (reader.Read())
@@ -121,6 +111,7 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
+        try{
         cmd.CommandText = @"INSERT INTO `Items` (name,Created_At,PriorityID,StatusID,Description) VALUE(@Name,@Created_At,@PriorityID,@StatusID,@Description);";
         cmd.Parameters.AddWithValue("@Name", model.Name);
         cmd.Parameters.AddWithValue("@Created_At", model.Created_At);
@@ -132,7 +123,12 @@ public class MyController : Controller
         await cmd.ExecuteNonQueryAsync();
 
         return Ok("ثبت با موفقیت انجام شد");
+        }catch(Exception e){
+
+            return Ok(e.Message);
+        }
     }
+
 
 
     [HttpPut]
@@ -145,7 +141,6 @@ public class MyController : Controller
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
         {
-            
             if ((Int64)count == 0)
             {
                 return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{model.ItemsID}");
@@ -158,8 +153,6 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
         cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
         cmd.Parameters.AddWithValue("@Update_At", model.Update_At);
-
-
 
         cmd.ExecuteNonQuery();
         return Ok("بروزرسانی با موفقیت انجام شد");
@@ -212,9 +205,11 @@ public class MyController : Controller
         try
         {
             cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete , StatusID = @StatusID WHERE ItemsID = @id;";
-            cmd.Parameters.AddWithValue("IsDelete", model.IsDelete);
-            cmd.Parameters.AddWithValue("StatusID", model.StatusID);
+            cmd.Parameters.AddWithValue("@isdelete", model.IsDelete);
+            cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
             await cmd.ExecuteNonQueryAsync();
+            // از ExecuteNonQuery
+            // زمانی جمله اس کیو ال پس از اجرا مقداری را بر نمیگرداند استفاده می شود مثل دیلیت و آپدیت و اینزرت
             return Ok("عملیات با موفقیت انجام شد");
         }
         catch (Exception e)
