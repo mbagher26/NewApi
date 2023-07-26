@@ -256,8 +256,12 @@ public class MyController : Controller
         if (count != null)
         {
             if ((Int64)count == 0)
+            {   var error = new MessageViewModel
             {
-                return NotFound($"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}");
+                StatusCode = 404,
+                Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
+            };
+                return NotFound(error);
             }
         }
         try
@@ -268,11 +272,21 @@ public class MyController : Controller
             await cmd.ExecuteNonQueryAsync();
             // از ExecuteNonQuery
             // زمانی جمله اس کیو ال پس از اجرا مقداری را بر نمیگرداند استفاده می شود مثل دیلیت و آپدیت و اینزرت
-            return Ok("عملیات با موفقیت انجام شد");
+            var messge =new MessageViewModel
+            {
+                StatusCode = 200,
+                Message = "عملیات با موفقیت انجام شد"
+            };
+            return Ok(messge);
         }
         catch (Exception )
         {
-            return BadRequest("عملیات ناموفق ");
+            var error =new MessageViewModel
+            {
+                StatusCode = 404,
+                Message = "عملیات ناموفق بود"
+            };
+            return BadRequest(error);
         }        
     }
 }
