@@ -22,12 +22,12 @@ public class MyController : Controller
                                 INNER JOIN Status s ON i.StatusID = s.StatusID
                                 INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
 
-            List<TodoItem> items = new List<TodoItem>();
+            List<TodoItemviewModel> items = new List<TodoItemviewModel>();
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
-                    items.Add(new TodoItem
+                    items.Add(new TodoItemviewModel
                     {
                         ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
                         Name = reader.GetString(reader.GetOrdinal("name")),
@@ -71,8 +71,12 @@ public class MyController : Controller
                     // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
                     if (count != null)
                     {       if((Int64)count == 0)
-                            {                                 
-                                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}"); 
+                            {   var errorViewModel = new MessageViewModel
+                                    {
+                                        StatusCode = 404,
+                                        Message = $"رکوردی با این شماره آیدی وجود ندارد:{id}"
+                                    };                              
+                                    return NotFound(errorViewModel); 
                             }                       
                     }
                     cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
@@ -80,13 +84,13 @@ public class MyController : Controller
                                         INNER JOIN Status s ON i.StatusID = s.StatusID
                                         INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
                                         WHERE ItemsID=@id;";
-                    List<TodoItem> items = new List<TodoItem>();
+                    List<TodoItemviewModel> items = new ();
                     
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (await reader.ReadAsync())
                         {
-                            items.Add(new TodoItem
+                            items.Add(new TodoItemviewModel
                             {
                                 ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
                                 Name = reader.GetString(reader.GetOrdinal("name")),
@@ -106,8 +110,13 @@ public class MyController : Controller
                                    
             }               
             catch(Exception e)
-            {
-                return StatusCode(500,"خطایی در سرور رخ داده");
+            {   
+                var errorViewModel = new MessageViewModel
+                {
+                    StatusCode = 500,
+                    Message = "خطایی در سرور رخ داده"
+                };
+                return StatusCode(500,errorViewModel);
             }
     }
 
@@ -126,10 +135,20 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@Description", model.Description);
 
         await cmd.ExecuteNonQueryAsync();
-        return Ok("ثبت با موفقیت انجام شد");
+        var messge = new MessageViewModel
+        {
+            StatusCode = 200,
+            Message = "ثبت با موفقیت انجام شد"
+        };
+        return Ok(messge);
 
         }catch(Exception){
-            return BadRequest("خطا در ثبت اطلاعات");
+            var errorViewModel = new MessageViewModel
+            {
+                StatusCode = 400,
+                Message = "خطا در ثبت اطلاعات"
+            };
+            return BadRequest(errorViewModel);
         }
     }
 

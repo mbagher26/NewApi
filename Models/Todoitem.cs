@@ -23,7 +23,6 @@ namespace newApi.Models
         public int StatusID { get; set;}
 
         public String? TitleStatus { get; set;}
-        
     }
 
 
@@ -67,4 +66,35 @@ namespace newApi.Models
 
     }
 
+    public class TodoItemviewModel
+    {
+        public int  ItemsID { get; set; }
+
+        public string Name { get;set;} = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public bool IsComplete { get; set; }
+        
+        public bool IsDelete { get; set;}
+        
+        public DateTime Created_At { get; set;}
+
+        public DateTime Update_At { get; set;}
+
+        public int PriorityID { get; set;}
+
+        public String? Title { get; set;}
+
+        public int StatusID { get; set;}
+
+        public String? TitleStatus { get; set;}
+    }
+
+    class MessageViewModel
+    {
+        public int StatusCode {get; set;}
+
+        public string Message {get; set;}
+    }
 }
