@@ -15,35 +15,40 @@ public class MyController : Controller
     [HttpGet("[action]")]
     public async Task<IActionResult> GetAll()
     {
-        var connection = MysqlConnect.GetConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
-                            FROM Items i
-                            INNER JOIN Status s ON i.StatusID = s.StatusID
-                            INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
+    try{    var connection = MysqlConnect.GetConnection();
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
+                                FROM Items i
+                                INNER JOIN Status s ON i.StatusID = s.StatusID
+                                INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
 
-        List<TodoItem> items = new List<TodoItem>();
-        using (var reader = await cmd.ExecuteReaderAsync())
-        {
-            while (await reader.ReadAsync())
+            List<TodoItem> items = new List<TodoItem>();
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
-                items.Add(new TodoItem
+                while (await reader.ReadAsync())
                 {
-                    ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
-                    Name = reader.GetString(reader.GetOrdinal("name")),
-                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
-                    IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-                    Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
-                    Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
-                    PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
-                    Title = reader.GetString(reader.GetOrdinal("Title")),
-                    Description = reader.GetString(reader.GetOrdinal("Description")),
-                    StatusID = reader.GetInt32(reader.GetOrdinal("StatusID")),
-                    TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus"))
-                });
+                    items.Add(new TodoItem
+                    {
+                        ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
+                        Name = reader.GetString(reader.GetOrdinal("name")),
+                        IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                        IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+                        Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
+                        Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
+                        PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
+                        Title = reader.GetString(reader.GetOrdinal("Title")),
+                        Description = reader.GetString(reader.GetOrdinal("Description")),
+                        StatusID = reader.GetInt32(reader.GetOrdinal("StatusID")),
+                        TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus"))
+                    });
+                }
             }
+            return Ok(items);
         }
-        return Ok(items);
+        catch(Exception e)
+        {
+            return StatusCode(500,"خطایی در سرور رخ داده است");
+        }
     }
 
 
