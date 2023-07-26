@@ -50,10 +50,11 @@ public class MyController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {   
-        try{
-                using(var connection = MysqlConnect.GetConnection())
-                using(var cmd = connection.CreateCommand())
-                {
+            try
+            {
+                var connection = MysqlConnect.GetConnection();
+                var cmd = connection.CreateCommand();
+                
                     cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
                     cmd.Parameters.AddWithValue("@id", id);
                     var count = await cmd.ExecuteScalarAsync();
@@ -63,11 +64,12 @@ public class MyController : Controller
 
                     // عبارت Async 
                     // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
-                    if (count != null || (long)count == 0)
-                    {                                         
-                            return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}");                        
+                    if (count != null)
+                    {       if((Int64)count == 0)
+                            {                                 
+                                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{id}"); 
+                            }                       
                     }
-
                     cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
                                         FROM Items i
                                         INNER JOIN Status s ON i.StatusID = s.StatusID
@@ -96,11 +98,12 @@ public class MyController : Controller
                         }
                     }
                     return Ok(items);
+                                   
+            }               
+            catch(Exception e)
+            {
+                return StatusCode(500,"خطایی در سرور رخ داده");
             }
-        }
-        catch(Exception ){
-            return StatusCode(500,"خطایی در سرور رخ داده است");
-        }
     }
 
 
