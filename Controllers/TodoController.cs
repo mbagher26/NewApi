@@ -165,7 +165,12 @@ public class MyController : Controller
         {
             if ((Int64)count == 0)
             {
-                return NotFound($"رکوردی با این شماره آیدی وجود ندارد:{model.ItemsID}");
+                var messge = new MessageViewModel
+                {
+                    StatusCode = 404,
+                    Message = $"رکوردی با این شماره آیدی وجود ندارد:{model.ItemsID}"
+                };
+                return NotFound(messge);
             }
         }
         try{
@@ -180,7 +185,7 @@ public class MyController : Controller
         return Ok("بروزرسانی با موفقیت انجام شد");
 
         }catch(Exception){
-            return BadRequest("خطا در بروزرسانی اطلاعلت");
+           return BadRequest("خطا در بروزرسانی اطلاعلت");
         }
     }
 
