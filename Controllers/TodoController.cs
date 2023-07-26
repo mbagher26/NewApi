@@ -209,21 +209,38 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@id", id);
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
-        {
-            
+        {    
             if ((Int64)count == 0)
-                return NotFound($"No record found with ID: {id}");
+            {
+                var error = new MessageViewModel
+                {
+                    StatusCode = 404,
+                    Message = $"No record found with ID: {id}"
+                };
+                return NotFound(error);
+            }
+                
         }
         try
         {
             cmd.CommandText = @"UPDATE Items SET IsDelete = @isdelete WHERE ItemsID = @id;";
             cmd.Parameters.AddWithValue("@isdelete", true);
             await cmd.ExecuteNonQueryAsync();
-            return Ok("عملیات با موفقیت انجام شد");
+            var messge = new MessageViewModel
+            {
+                StatusCode = 200,
+                Message = "عملیات با موفقیت انجام شد"
+            };
+            return Ok(messge);
         }
         catch (Exception)
-        {
-            return BadRequest("خطا در اجرای عملیات حذف");
+        {   
+            var error = new MessageViewModel
+            {
+                StatusCode = 404,
+                Message = "خطا در اجرای عملیات حذف"
+            };
+            return BadRequest(error);
         }
     }
 
