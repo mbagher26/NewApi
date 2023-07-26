@@ -182,10 +182,20 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@Update_At", model.Update_At);
 
         cmd.ExecuteNonQuery();
-        return Ok("بروزرسانی با موفقیت انجام شد");
+        var messge = new MessageViewModel
+        {
+            StatusCode = 200,
+            Message = "بروزرسانی با موفقیت انجام شد"
+        };
+        return Ok(messge);
 
         }catch(Exception){
-           return BadRequest("خطا در بروزرسانی اطلاعلت");
+            var error = new MessageViewModel
+            {
+                StatusCode = 400,
+                Message = "خطا در بروزرسانی اطلاعلت"
+            };
+            return BadRequest(error);
         }
     }
 
