@@ -135,12 +135,15 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@Description", model.Description);
 
         await cmd.ExecuteNonQueryAsync();
-        var messge = new MessageViewModel
-        {
-            StatusCode = 200,
+
+        var insertedItemId = (int)cmd.LastInsertedId;
+
+        var responsiveViewModel = new PostResponseViewModel
+        {   
+            Id = insertedItemId,
             Message = "ثبت با موفقیت انجام شد"
         };
-        return Ok(messge);
+        return Ok(responsiveViewModel);
 
         }catch(Exception){
             var errorViewModel = new MessageViewModel
@@ -207,6 +210,7 @@ public class MyController : Controller
         using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id", id);
+       
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
         {    
@@ -219,7 +223,19 @@ public class MyController : Controller
                 };
                 return NotFound(error);
             }
-                
+        }
+
+        cmd.CommandText =@"SELECT IsDelete FROM Items WHERE ItemsID = @id";
+        var Isdelete = (bool) await cmd.ExecuteScalarAsync();
+        if(Isdelete)
+        {
+            var Message = new MessageViewModel
+            {
+                StatusCode = 200,
+
+                Message = "رکورد با این شماره آیدی قبلا حذف شده است"
+            };
+            return Ok(Message);
         }
         try
         {
@@ -245,7 +261,7 @@ public class MyController : Controller
     }
 
 
-    [HttpDelete("[action]")]
+    [HttpPut("[action]")]
     public async Task<IActionResult> Activate(TodoItemActivateMethod model)
     {
         var connection = MysqlConnect.GetConnection();
@@ -257,34 +273,57 @@ public class MyController : Controller
         {
             if ((Int64)count == 0)
             {   var error = new MessageViewModel
-            {
-                StatusCode = 404,
-                Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
-            };
+                {
+                    StatusCode = 404,
+                    Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
+                };
                 return NotFound(error);
             }
         }
+        cmd.CommandText = @"SELECT  StatusID FROM Items 
+                            WHERE ItemsID = @id;";
+        cmd.Parameters.Clear();
+        cmd.Parameters.AddWithValue("@id",model.ItemsID);
+        using (var reader = cmd.ExecuteReader())
+        
+        if(reader.Read())
+        {   
+            var currentStatusID = reader.GetInt32(reader.GetOrdinal("StatusID"));
+            if(currentStatusID == model.StatusID)
+            {
+                var responsiveViewModel = new PostResponseViewModel
+                    {   
+                        Id = model.ItemsID,
+
+                        Message = $"قبلا در این وضعیت قرار گرفته است:{model.StatusID}"
+                    };
+                return Ok(responsiveViewModel);
+            }
+            reader.Close();
+        }
         try
         {
-            cmd.CommandText = $"UPDATE Items SET IsDelete = @isdelete , StatusID = @StatusID WHERE ItemsID = @id;";
-            cmd.Parameters.AddWithValue("@isdelete", model.IsDelete);
+            cmd.CommandText = $"UPDATE Items SET  StatusID = @StatusID WHERE ItemsID = @id;";
+            cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
+            cmd.Parameters.AddWithValue("@id", model.ItemsID);
+
             await cmd.ExecuteNonQueryAsync();
             // از ExecuteNonQuery
             // زمانی جمله اس کیو ال پس از اجرا مقداری را بر نمیگرداند استفاده می شود مثل دیلیت و آپدیت و اینزرت
             var messge =new MessageViewModel
-            {
-                StatusCode = 200,
-                Message = "عملیات با موفقیت انجام شد"
-            };
+                {
+                    StatusCode = 200,
+                    Message = "عملیات با موفقیت انجام شد"
+                };
             return Ok(messge);
         }
         catch (Exception )
         {
-            var error =new MessageViewModel
+            var error = new MessageViewModel
             {
                 StatusCode = 404,
-                Message = "عملیات ناموفق بود"
+                Message = "عملیات موفقیت آمیز نبود"
             };
             return BadRequest(error);
         }        

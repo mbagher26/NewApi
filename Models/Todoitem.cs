@@ -60,8 +60,6 @@ namespace newApi.Models
     public class TodoItemActivateMethod
     {
         public int  ItemsID { get; set; }
-
-        public bool IsDelete { get; set;}
         public int StatusID { get; set;}
 
     }
@@ -91,9 +89,16 @@ namespace newApi.Models
         public String? TitleStatus { get; set;}
     }
 
-    class MessageViewModel
+    public class MessageViewModel
     {
         public int StatusCode {get; set;}
+
+        public string Message {get; set;}
+    }
+
+    public class PostResponseViewModel
+    {
+        public int Id {get; set;}
 
         public string Message {get; set;}
     }
