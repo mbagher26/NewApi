@@ -122,42 +122,73 @@ public class MyController : Controller
 
 
     [HttpPost]
-    public async Task<IActionResult> Post(TodoItemPostModel model)
-    {
+    public async Task<IActionResult> Post([FromForm]TodoItemPostModel model)
+    {   
+        if(string.IsNullOrWhiteSpace(model.Name))
+        {
+            var messge = new PostResponseViewModel
+            {
+                StatusCode = 400,
+                Message = "نام وارد شده معتبر نیست"
+            };
+            return BadRequest(messge);
+        }
+
+        if(model.Image == null || model.Image.Length == 0)
+        {
+            var messge = new PostResponseViewModel
+            {
+                StatusCode = 400,
+                Message = "تصویر ارسال شده معتبر نیست"
+            };
+        }
+      
+        string imagesFolderPath = "/home/mohamad/imagefolder/";
+        string uniqueFileName = Guid.NewGuid().ToString() + "-" + model.Image.FileName;
+        string imagePath = Path.Combine(imagesFolderPath, uniqueFileName);
+
+        using(var stream = new FileStream(imagePath, FileMode.Create))
+        {
+            await model.Image.CopyToAsync(stream);
+        }
+
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
         try{
-        cmd.CommandText = @"INSERT INTO `Items` (name,Created_At,PriorityID,StatusID,Description) VALUE(@Name,@Created_At,@PriorityID,@StatusID,@Description);";
+        cmd.CommandText = @"INSERT INTO `Items` (name,PriorityID,StatusID,Description,Image) VALUE(@Name,@PriorityID,@StatusID,@Description,@Image);";
         cmd.Parameters.AddWithValue("@Name", model.Name);
-        cmd.Parameters.AddWithValue("@Created_At", model.Created_At);
         cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
         cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
         cmd.Parameters.AddWithValue("@Description", model.Description);
+        cmd.Parameters.AddWithValue("@Image",imagePath);
+
+
 
         await cmd.ExecuteNonQueryAsync();
-
         var insertedItemId = (int)cmd.LastInsertedId;
 
         var responsiveViewModel = new PostResponseViewModel
         {   
+            StatusCode = 200,
             Id = insertedItemId,
             Message = "ثبت با موفقیت انجام شد"
         };
         return Ok(responsiveViewModel);
 
-        }catch(Exception){
-            var errorViewModel = new MessageViewModel
-            {
-                StatusCode = 400,
-                Message = "خطا در ثبت اطلاعات"
-            };
-            return BadRequest(errorViewModel);
+        }catch(Exception e){
+            return BadRequest(e.Message);
+
         }
     }
-
+            // var errorViewModel = new MessageViewModel
+            // {
+            //     StatusCode = 400,
+            //     Message = "خطا در ثبت اطلاعات"
+            // };
+            // return BadRequest(errorViewModel);
 
     [HttpPut]
-    public async Task<IActionResult> Update(TodoItemUpdateModel model)
+    public async Task<IActionResult> Update([FromForm]TodoItemUpdateModel model)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -176,13 +207,25 @@ public class MyController : Controller
                 return NotFound(messge);
             }
         }
+
         try{
-        cmd.CommandText = @"UPDATE Items SET name = @name , Description = @Description, PriorityID = @PriorityID, StatusID = @StatusID, Update_At = @Update_At  WHERE ItemsID = @id;";
+
+        string imagesFolderPath = "/home/mohamad/UpdateImageFolder/";
+        string uniqueFileName = Guid.NewGuid().ToString() + "-" + model.Image.FileName;
+        string imagePath = Path.Combine(imagesFolderPath, uniqueFileName);
+
+        using(var stream = new FileStream(imagePath, FileMode.Create))
+        {
+            await model.Image.CopyToAsync(stream);
+        }
+
+        cmd.CommandText = @"UPDATE Items SET name = @name , Description = @Description, PriorityID = @PriorityID, StatusID = @StatusID, Image = @Image  WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@name", model.Name);
         cmd.Parameters.AddWithValue("@Description", model.Description);
         cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
         cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
-        cmd.Parameters.AddWithValue("@Update_At", model.Update_At);
+        cmd.Parameters.AddWithValue("@Image", imagePath);
+
 
         cmd.ExecuteNonQuery();
         var messge = new MessageViewModel
@@ -280,8 +323,7 @@ public class MyController : Controller
                 return NotFound(error);
             }
         }
-        cmd.CommandText = @"SELECT  StatusID FROM Items 
-                            WHERE ItemsID = @id;";
+        cmd.CommandText = @"SELECT  StatusID FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.Clear();
         cmd.Parameters.AddWithValue("@id",model.ItemsID);
         using (var reader = cmd.ExecuteReader())
