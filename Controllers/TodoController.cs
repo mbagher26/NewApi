@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[Area]/todo")]
 public class MyController : Controller
-{     
+{   
     [HttpGet("[action]")]
     public async Task<IActionResult> GetAll()
     {
@@ -141,6 +141,7 @@ public class MyController : Controller
                 StatusCode = 400,
                 Message = "تصویر ارسال شده معتبر نیست"
             };
+            return BadRequest(messge);
         }
       
         string imagesFolderPath = "/home/mohamad/imagefolder/";
@@ -162,8 +163,6 @@ public class MyController : Controller
         cmd.Parameters.AddWithValue("@Description", model.Description);
         cmd.Parameters.AddWithValue("@Image",imagePath);
 
-
-
         await cmd.ExecuteNonQueryAsync();
         var insertedItemId = (int)cmd.LastInsertedId;
 
@@ -174,18 +173,17 @@ public class MyController : Controller
             Message = "ثبت با موفقیت انجام شد"
         };
         return Ok(responsiveViewModel);
-
-        }catch(Exception e){
-            return BadRequest(e.Message);
-
+        }
+        catch(Exception){
+            var errorViewModel = new MessageViewModel
+            {
+                StatusCode = 400,
+                Message = "خطا در ثبت اطلاعات"
+            };
+            return BadRequest(errorViewModel);
         }
     }
-            // var errorViewModel = new MessageViewModel
-            // {
-            //     StatusCode = 400,
-            //     Message = "خطا در ثبت اطلاعات"
-            // };
-            // return BadRequest(errorViewModel);
+
 
     [HttpPut]
     public async Task<IActionResult> Update([FromForm]TodoItemUpdateModel model)
@@ -370,6 +368,50 @@ public class MyController : Controller
             return BadRequest(error);
         }        
     }
-}
 
+    [HttpPut("[action]")]
+    public async Task<IActionResult> Management(TodoItemChangeCompeletModel model)
+    {
+    try{
+        var connection = MysqlConnect.GetConnection();
+        using var cmd = connection.CreateCommand();
+    
+        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@id", model.ItemsID);
+        var count = await cmd.ExecuteScalarAsync();
+        if (count != null)
+        {
+            if ((Int64)count == 0)
+            {   var error = new MessageViewModel
+                {
+                    StatusCode = 404,
+                    Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
+                };
+                return NotFound(error);
+            }
+        }
+        cmd.CommandText = @"UPDATE Items SET IsComplete = @IsComplete, IsDelete = @IsDelete WHERE ItemsID = @id;";
+        cmd.Parameters.AddWithValue("@IsComplete",model.IsComplete);
+        cmd.Parameters.AddWithValue("@IsDelete",model.IsDelete);
+
+
+        await cmd.ExecuteNonQueryAsync();
+        var messge =new MessageViewModel
+            {
+                StatusCode = 200,
+                Message = "عملیات با موفقیت انجام شد"
+            };
+        return Ok(messge);
+    }
+    catch (Exception)
+    {
+        var error = new MessageViewModel
+        {
+            StatusCode = 404,
+            Message = "عملیات موفقیت آمیز نبود"
+        };
+        return BadRequest(error);
+    }  
+    }
+}
 
