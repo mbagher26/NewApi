@@ -28,13 +28,11 @@ namespace newApi.Models
 
     public class TodoItemPostModel
     {
-        public int  ItemsID { get; set; }
-
-        public string Name { get;set;} = string.Empty;
+        public string? Name { get;set;}
 
         public string Description { get; set; } = string.Empty;
 
-        public DateTime? Created_At { get; set;}
+        public IFormFile? Image {get; set;}
 
         public int? PriorityID { get; set;}
 
@@ -46,10 +44,9 @@ namespace newApi.Models
         public int  ItemsID { get; set; }
 
         public string Name { get;set;} = string.Empty;
+        public IFormFile? Image {get; set;}
 
         public string Description { get; set; } = string.Empty;
-
-        public DateTime? Update_At { get; set;}
 
         public int? PriorityID { get; set;}
 
@@ -100,6 +97,7 @@ namespace newApi.Models
     {
         public int Id {get; set;}
 
+        public int StatusCode {get; set;}
         public string Message {get; set;}
     }
 }
