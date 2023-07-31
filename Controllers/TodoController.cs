@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[Area]/todo")]
 public class MyController : Controller
-{   
+{
     [HttpGet("[action]")]
     public async Task<IActionResult> GetAll()
     {
-    try{    var connection = MysqlConnect.GetConnection();
+        try
+        {
+            var connection = MysqlConnect.GetConnection();
             using var cmd = connection.CreateCommand();
             cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
                                 FROM Items i
@@ -45,86 +47,88 @@ public class MyController : Controller
             }
             return Ok(items);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            return StatusCode(500,"خطایی در سرور رخ داده است");
+            return StatusCode(500, "خطایی در سرور رخ داده است");
         }
     }
 
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
-    {   
-            try
-            {
-                var connection = MysqlConnect.GetConnection();
-                var cmd = connection.CreateCommand();
-                
-                    cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
-                    cmd.Parameters.AddWithValue("@id", id);
-                    var count = await cmd.ExecuteScalarAsync();
-                    //استفاده از متد ExecuteScalar()
-                    //این متد معمولا زمانی استفاده می شود که انتظار یک مقدار واحد را دارد مثل زمانی که از 
-                    // متدهای کانت و سام و اوریج در جمله اس کیو ال استفاده کردیم 
+    {
+        try
+        {
+            var connection = MysqlConnect.GetConnection();
+            var cmd = connection.CreateCommand();
 
-                    // عبارت Async 
-                    // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
-                    if (count != null)
-                    {       if((Int64)count == 0)
-                            {   var errorViewModel = new MessageViewModel
-                                    {
-                                        StatusCode = 404,
-                                        Message = $"رکوردی با این شماره آیدی وجود ندارد:{id}"
-                                    };                              
-                                    return NotFound(errorViewModel); 
-                            }                       
-                    }
-                    cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
+            cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+            cmd.Parameters.AddWithValue("@id", id);
+            var count = await cmd.ExecuteScalarAsync();
+            //استفاده از متد ExecuteScalar()
+            //این متد معمولا زمانی استفاده می شود که انتظار یک مقدار واحد را دارد مثل زمانی که از 
+            // متدهای کانت و سام و اوریج در جمله اس کیو ال استفاده کردیم 
+
+            // عبارت Async 
+            // باعث می شود که این متد به صورت نا همزمان اجرا شود برای حفظ پاسخگویی و مقیاس پذیری استفاده می شود. 
+            if (count != null)
+            {
+                if ((Int64)count == 0)
+                {
+                    var errorViewModel = new MessageViewModel
+                    {
+                        StatusCode = 404,
+                        Message = $"رکوردی با این شماره آیدی وجود ندارد:{id}"
+                    };
+                    return NotFound(errorViewModel);
+                }
+            }
+            cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
                                         FROM Items i
                                         INNER JOIN Status s ON i.StatusID = s.StatusID
                                         INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
                                         WHERE ItemsID=@id;";
-                    List<TodoItemviewModel> items = new ();
-                    
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            items.Add(new TodoItemviewModel
-                            {
-                                ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
-                                Name = reader.GetString(reader.GetOrdinal("name")),
-                                IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
-                                IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
-                                Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
-                                PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
-                                Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
-                                Title = reader.GetString(reader.GetOrdinal("Title")),
-                                Description = reader.GetString(reader.GetOrdinal("Description")),
-                                TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus")),
-                                StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
-                            });
-                        }
-                    }
-                    return Ok(items);
-                                   
-            }               
-            catch(Exception e)
-            {   
-                var errorViewModel = new MessageViewModel
+            List<TodoItemviewModel> items = new();
+
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (await reader.ReadAsync())
                 {
-                    StatusCode = 500,
-                    Message = "خطایی در سرور رخ داده"
-                };
-                return StatusCode(500,errorViewModel);
+                    items.Add(new TodoItemviewModel
+                    {
+                        ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
+                        Name = reader.GetString(reader.GetOrdinal("name")),
+                        IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                        IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
+                        Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
+                        PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),
+                        Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
+                        Title = reader.GetString(reader.GetOrdinal("Title")),
+                        Description = reader.GetString(reader.GetOrdinal("Description")),
+                        TitleStatus = reader.GetString(reader.GetOrdinal("TitleStatus")),
+                        StatusID = reader.GetInt32(reader.GetOrdinal("StatusID"))
+                    });
+                }
             }
+            return Ok(items);
+
+        }
+        catch (Exception e)
+        {
+            var errorViewModel = new MessageViewModel
+            {
+                StatusCode = 500,
+                Message = "خطایی در سرور رخ داده"
+            };
+            return StatusCode(500, errorViewModel);
+        }
     }
 
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromForm]TodoItemPostModel model)
-    {   
-        if(string.IsNullOrWhiteSpace(model.Name))
+    public async Task<IActionResult> Post([FromForm] TodoItemPostModel model)
+    {
+        if (string.IsNullOrWhiteSpace(model.Name))
         {
             var messge = new PostResponseViewModel
             {
@@ -134,7 +138,7 @@ public class MyController : Controller
             return BadRequest(messge);
         }
 
-        if(model.Image == null || model.Image.Length == 0)
+        if (model.Image == null || model.Image.Length == 0)
         {
             var messge = new PostResponseViewModel
             {
@@ -143,50 +147,67 @@ public class MyController : Controller
             };
             return BadRequest(messge);
         }
-      
+
         string imagesFolderPath = "/home/mohamad/imagefolder/";
         string uniqueFileName = Guid.NewGuid().ToString() + "-" + model.Image.FileName;
         string imagePath = Path.Combine(imagesFolderPath, uniqueFileName);
 
-        using(var stream = new FileStream(imagePath, FileMode.Create))
+        using (var stream = new FileStream(imagePath, FileMode.Create))
         {
             await model.Image.CopyToAsync(stream);
         }
 
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        try{
-        cmd.CommandText = @"INSERT INTO `Items` (name,PriorityID,StatusID,Description,Image) VALUE(@Name,@PriorityID,@StatusID,@Description,@Image);";
-        cmd.Parameters.AddWithValue("@Name", model.Name);
-        cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
-        cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
-        cmd.Parameters.AddWithValue("@Description", model.Description);
-        cmd.Parameters.AddWithValue("@Image",imagePath);
+        try
+        {
+            cmd.CommandText = @"INSERT INTO `Items` (name,PriorityID,StatusID,Description) VALUE(@Name,@PriorityID,@StatusID,@Description);";
 
-        await cmd.ExecuteNonQueryAsync();
-        var insertedItemId = (int)cmd.LastInsertedId;
+            cmd.Parameters.AddWithValue("@Name", model.Name);
+            cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
+            cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
+            cmd.Parameters.AddWithValue("@Description", model.Description);
 
-        var responsiveViewModel = new PostResponseViewModel
-        {   
-            StatusCode = 200,
-            Id = insertedItemId,
-            Message = "ثبت با موفقیت انجام شد"
-        };
-        return Ok(responsiveViewModel);
-        }
-        catch(Exception){
-            var errorViewModel = new MessageViewModel
+            await cmd.ExecuteNonQueryAsync();
+
+            var insertedItemId = (int)cmd.LastInsertedId;
+
+            cmd.CommandText = @"INSERT INTO `Image` (`ItemsID`, `ImagePath`) VALUES ( @ItemsID, @ImagePath);";
+
+            cmd.Parameters.AddWithValue("@ImagePath", imagePath);
+            cmd.Parameters.AddWithValue("@ItemsID", insertedItemId);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            var insertedImageId = (int)cmd.LastInsertedId;
+
+            cmd.CommandText = @"UPDATE `Items` SET `ImageID` = @ImageID WHERE `ItemsID` = @ItemsID";
+
+            cmd.Parameters.AddWithValue("@ImageID", insertedImageId);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            var responsiveViewModel = new PostResponseViewModel
             {
-                StatusCode = 400,
-                Message = "خطا در ثبت اطلاعات"
+                StatusCode = 200,
+                Id = insertedItemId,
+                Message = "ثبت با موفقیت انجام شد"
             };
-            return BadRequest(errorViewModel);
+            return Ok(responsiveViewModel);
+        }
+        catch (Exception e)
+        {
+            // var errorViewModel = new MessageViewModel
+            // {
+            //     StatusCode = 400,
+            //     Message = "خطا در ثبت اطلاعات"
+            // };
+            return BadRequest(e.Message + "خطا در ثبت اطلاعات");
         }
     }
 
-
     [HttpPut]
-    public async Task<IActionResult> Update([FromForm]TodoItemUpdateModel model)
+    public async Task<IActionResult> Update([FromForm] TodoItemUpdateModel model)
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
@@ -206,42 +227,55 @@ public class MyController : Controller
             }
         }
 
-        try{
-
-        string imagesFolderPath = "/home/mohamad/UpdateImageFolder/";
-        string uniqueFileName = Guid.NewGuid().ToString() + "-" + model.Image.FileName;
-        string imagePath = Path.Combine(imagesFolderPath, uniqueFileName);
-
-        using(var stream = new FileStream(imagePath, FileMode.Create))
+        try
         {
-            await model.Image.CopyToAsync(stream);
+
+            string imagesFolderPath = "/home/mohamad/UpdateImageFolder/";
+            string uniqueFileName = Guid.NewGuid().ToString() + "-" + model.Image.FileName;
+            string imagePath = Path.Combine(imagesFolderPath, uniqueFileName);
+
+            using (var stream = new FileStream(imagePath, FileMode.Create))
+            {
+                await model.Image.CopyToAsync(stream);
+            }
+
+            cmd.CommandText = @"UPDATE Items i
+                                INNER JOIN Image im ON i.ItemsID = im.ItemsID
+                                SET i.name = @name,
+                                    i.Description = @Description,
+                                    i.PriorityID = @PriorityID,
+                                    i.StatusID = @StatusID,
+                                    im.ImagePath = @ImagePath
+                                WHERE i.ItemsID = @id;";
+
+            cmd.Parameters.AddWithValue("@name", model.Name);
+            cmd.Parameters.AddWithValue("@Description", model.Description);
+            cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
+            cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
+            cmd.Parameters.AddWithValue("@ImagePath", imagePath);
+
+
+            cmd.ExecuteNonQuery();
+            var messge = new MessageViewModel
+            {
+                StatusCode = 200,
+                Message = "بروزرسانی با موفقیت انجام شد"
+            };
+            return Ok(messge);
+
         }
-
-        cmd.CommandText = @"UPDATE Items SET name = @name , Description = @Description, PriorityID = @PriorityID, StatusID = @StatusID, Image = @Image  WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@name", model.Name);
-        cmd.Parameters.AddWithValue("@Description", model.Description);
-        cmd.Parameters.AddWithValue("@PriorityID", model.PriorityID);
-        cmd.Parameters.AddWithValue("@StatusID", model.StatusID);
-        cmd.Parameters.AddWithValue("@Image", imagePath);
-
-
-        cmd.ExecuteNonQuery();
-        var messge = new MessageViewModel
+        catch (Exception e)
         {
-            StatusCode = 200,
-            Message = "بروزرسانی با موفقیت انجام شد"
-        };
-        return Ok(messge);
-
-        }catch(Exception){
             var error = new MessageViewModel
             {
                 StatusCode = 400,
                 Message = "خطا در بروزرسانی اطلاعلت"
             };
-            return BadRequest(error);
+            return BadRequest(e.Message);
         }
     }
+
+
 
 
     [HttpDelete("{id}")]
@@ -251,10 +285,10 @@ public class MyController : Controller
         using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.AddWithValue("@id", id);
-       
+
         var count = await cmd.ExecuteScalarAsync();
         if (count != null)
-        {    
+        {
             if ((Int64)count == 0)
             {
                 var error = new MessageViewModel
@@ -266,9 +300,9 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText =@"SELECT IsDelete FROM Items WHERE ItemsID = @id";
-        var Isdelete = (bool) await cmd.ExecuteScalarAsync();
-        if(Isdelete)
+        cmd.CommandText = @"SELECT IsDelete FROM Items WHERE ItemsID = @id";
+        var Isdelete = (bool)await cmd.ExecuteScalarAsync();
+        if (Isdelete)
         {
             var Message = new MessageViewModel
             {
@@ -291,7 +325,7 @@ public class MyController : Controller
             return Ok(messge);
         }
         catch (Exception)
-        {   
+        {
             var error = new MessageViewModel
             {
                 StatusCode = 404,
@@ -313,7 +347,8 @@ public class MyController : Controller
         if (count != null)
         {
             if ((Int64)count == 0)
-            {   var error = new MessageViewModel
+            {
+                var error = new MessageViewModel
                 {
                     StatusCode = 404,
                     Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
@@ -323,24 +358,24 @@ public class MyController : Controller
         }
         cmd.CommandText = @"SELECT  StatusID FROM Items WHERE ItemsID = @id;";
         cmd.Parameters.Clear();
-        cmd.Parameters.AddWithValue("@id",model.ItemsID);
+        cmd.Parameters.AddWithValue("@id", model.ItemsID);
         using (var reader = cmd.ExecuteReader())
-        
-        if(reader.Read())
-        {   
-            var currentStatusID = reader.GetInt32(reader.GetOrdinal("StatusID"));
-            if(currentStatusID == model.StatusID)
+
+            if (reader.Read())
             {
-                var responsiveViewModel = new PostResponseViewModel
-                    {   
+                var currentStatusID = reader.GetInt32(reader.GetOrdinal("StatusID"));
+                if (currentStatusID == model.StatusID)
+                {
+                    var responsiveViewModel = new PostResponseViewModel
+                    {
                         Id = model.ItemsID,
 
                         Message = $"قبلا در این وضعیت قرار گرفته است:{model.StatusID}"
                     };
-                return Ok(responsiveViewModel);
+                    return Ok(responsiveViewModel);
+                }
+                reader.Close();
             }
-            reader.Close();
-        }
         try
         {
             cmd.CommandText = $"UPDATE Items SET  StatusID = @StatusID WHERE ItemsID = @id;";
@@ -351,14 +386,14 @@ public class MyController : Controller
             await cmd.ExecuteNonQueryAsync();
             // از ExecuteNonQuery
             // زمانی جمله اس کیو ال پس از اجرا مقداری را بر نمیگرداند استفاده می شود مثل دیلیت و آپدیت و اینزرت
-            var messge =new MessageViewModel
-                {
-                    StatusCode = 200,
-                    Message = "عملیات با موفقیت انجام شد"
-                };
+            var messge = new MessageViewModel
+            {
+                StatusCode = 200,
+                Message = "عملیات با موفقیت انجام شد"
+            };
             return Ok(messge);
         }
-        catch (Exception )
+        catch (Exception)
         {
             var error = new MessageViewModel
             {
@@ -366,52 +401,53 @@ public class MyController : Controller
                 Message = "عملیات موفقیت آمیز نبود"
             };
             return BadRequest(error);
-        }        
+        }
     }
 
     [HttpPut("[action]")]
     public async Task<IActionResult> Management(TodoItemChangeCompeletModel model)
     {
-    try{
-        var connection = MysqlConnect.GetConnection();
-        using var cmd = connection.CreateCommand();
-    
-        cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@id", model.ItemsID);
-        var count = await cmd.ExecuteScalarAsync();
-        if (count != null)
+        try
         {
-            if ((Int64)count == 0)
-            {   var error = new MessageViewModel
+            var connection = MysqlConnect.GetConnection();
+            using var cmd = connection.CreateCommand();
+
+            cmd.CommandText = $"SELECT COUNT(*) FROM Items WHERE ItemsID = @id;";
+            cmd.Parameters.AddWithValue("@id", model.ItemsID);
+            var count = await cmd.ExecuteScalarAsync();
+            if (count != null)
+            {
+                if ((Int64)count == 0)
                 {
-                    StatusCode = 404,
-                    Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
-                };
-                return NotFound(error);
+                    var error = new MessageViewModel
+                    {
+                        StatusCode = 404,
+                        Message = $"رکوردی با این شماره آیدی یافت نشد:{model.ItemsID}"
+                    };
+                    return NotFound(error);
+                }
             }
-        }
-        cmd.CommandText = @"UPDATE Items SET IsComplete = @IsComplete, IsDelete = @IsDelete WHERE ItemsID = @id;";
-        cmd.Parameters.AddWithValue("@IsComplete",model.IsComplete);
-        cmd.Parameters.AddWithValue("@IsDelete",model.IsDelete);
+            cmd.CommandText = @"UPDATE Items SET IsComplete = @IsComplete, IsDelete = @IsDelete WHERE ItemsID = @id;";
+            cmd.Parameters.AddWithValue("@IsComplete", model.IsComplete);
+            cmd.Parameters.AddWithValue("@IsDelete", model.IsDelete);
 
 
-        await cmd.ExecuteNonQueryAsync();
-        var messge =new MessageViewModel
+            await cmd.ExecuteNonQueryAsync();
+            var messge = new MessageViewModel
             {
                 StatusCode = 200,
                 Message = "عملیات با موفقیت انجام شد"
             };
-        return Ok(messge);
-    }
-    catch (Exception)
-    {
-        var error = new MessageViewModel
+            return Ok(messge);
+        }
+        catch (Exception)
         {
-            StatusCode = 404,
-            Message = "عملیات موفقیت آمیز نبود"
-        };
-        return BadRequest(error);
-    }  
+            var error = new MessageViewModel
+            {
+                StatusCode = 404,
+                Message = "عملیات موفقیت آمیز نبود"
+            };
+            return BadRequest(error);
+        }
     }
 }
-

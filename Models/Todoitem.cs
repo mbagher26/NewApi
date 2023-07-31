@@ -60,6 +60,13 @@ namespace newApi.Models
         public int StatusID { get; set;}
 
     }
+    public class TodoItemChangeCompeletModel
+    {
+        public int ItemsID { get; set;}
+        public bool? IsComplete { get; set;}
+
+        public bool? IsDelete { get; set;}
+    }
 
     public class TodoItemviewModel
     {
