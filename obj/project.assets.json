@@ -743,11 +743,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/mohamad/newpriject/newApi/newApi/newApi.csproj",
+      "projectUniqueName": "/home/mohamad/NewApi/newApi.csproj",
       "projectName": "newApi",
-      "projectPath": "/home/mohamad/newpriject/newApi/newApi/newApi.csproj",
+      "projectPath": "/home/mohamad/NewApi/newApi.csproj",
       "packagesPath": "/home/mohamad/.nuget/packages/",
-      "outputPath": "/home/mohamad/newpriject/newApi/newApi/obj/",
+      "outputPath": "/home/mohamad/NewApi/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/mohamad/.nuget/NuGet/NuGet.Config"

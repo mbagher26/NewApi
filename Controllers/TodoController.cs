@@ -18,7 +18,7 @@ public class MyController : Controller
     {
         var connection = MysqlConnect.GetConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsComplete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, p.Title, i.Description, i.StatusID, s.TitleStatus
                             FROM Items i
                             INNER JOIN Status s ON i.StatusID = s.StatusID
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID ORDER BY i.ItemsID;";
@@ -32,7 +32,7 @@ public class MyController : Controller
                 {
                     ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
                     Name = reader.GetString(reader.GetOrdinal("name")),
-                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsComplete")),
                     IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
                     Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                     Update_At = reader.GetDateTime(reader.GetOrdinal("Update_At")),
@@ -70,7 +70,7 @@ public class MyController : Controller
             }
         }
 
-        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsCompelete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
+        cmd.CommandText = @"SELECT i.ItemsID, i.name, i.IsComplete, i.IsDelete, i.Created_At, i.Update_At, i.PriorityID, i.Description, i.StatusID, s.TitleStatus,p.Title
                             FROM Items i
                             INNER JOIN Status s ON i.StatusID = s.StatusID
                             INNER JOIN Priority p ON i.PriorityID = p.PriorityID                         
@@ -86,7 +86,7 @@ public class MyController : Controller
                 {
                     ItemsID = reader.GetInt32(reader.GetOrdinal("ItemsID")),
                     Name = reader.GetString(reader.GetOrdinal("name")),
-                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsCompelete")),
+                    IsComplete = reader.GetBoolean(reader.GetOrdinal("IsComplete")),
                     IsDelete = reader.GetBoolean(reader.GetOrdinal("IsDelete")),
                     Created_At = reader.GetDateTime(reader.GetOrdinal("Created_At")),
                     PriorityID = reader.GetInt32(reader.GetOrdinal("PriorityID")),

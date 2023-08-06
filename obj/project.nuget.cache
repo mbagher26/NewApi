@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3C4n/cvzuE0sACVf2NRoJxUZoK6hlpCZmyin7m0azmnUFqMxXxc+8sn2czh11ct5QHF/AcM88MbMPYnV6EwMDA==",
+  "dgSpecHash": "xkLfZV1k45NSN5hZXvvmcJ67Pl5gGrdj8haLP2hzKU93d9QdJo7ASRTnp2PjmsnX5ucq55ZLYWXIzT8S2ecbVg==",
   "success": true,
-  "projectFilePath": "/home/mohamad/newpriject/newApi/newApi/newApi.csproj",
+  "projectFilePath": "/home/mohamad/NewApi/newApi.csproj",
   "expectedPackageFiles": [
     "/home/mohamad/.nuget/packages/microsoft.aspnetcore.jsonpatch/7.0.9/microsoft.aspnetcore.jsonpatch.7.0.9.nupkg.sha512",
     "/home/mohamad/.nuget/packages/microsoft.aspnetcore.mvc.newtonsoftjson/7.0.9/microsoft.aspnetcore.mvc.newtonsoftjson.7.0.9.nupkg.sha512",
